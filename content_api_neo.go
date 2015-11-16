@@ -71,6 +71,8 @@ func main() {
 func ensureIndexes(db *neoism.Database) {
 	ensureIndex(db, "Content", "uuid")
 	ensureIndex(db, "Article", "uuid")
+	ensureIndex(db, "Image", "uuid")
+	ensureIndex(db, "Brand", "uuid")
 }
 
 func ensureIndex(db *neoism.Database, label string, prop string) {
