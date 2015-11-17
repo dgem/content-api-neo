@@ -32,7 +32,7 @@ func main() {
 
 	ensureIndexes(db)
 
-	writeQueue = make(chan content, 2048)
+	writeQueue = make(chan []*neoism.CypherQuery, 2048)
 
 	port := 8080
 
@@ -92,7 +92,7 @@ func ensureIndex(db *neoism.Database, label string, prop string) {
 
 var db *neoism.Database
 
-var writeQueue chan content
+var writeQueue chan []*neoism.CypherQuery
 
 func orgWriteLoop() {
 	var qs []*neoism.CypherQuery
@@ -106,7 +106,7 @@ func orgWriteLoop() {
 			if !ok {
 				return
 			}
-			for _, q := range toQueries(o) {
+			for _, q := range o {
 				qs = append(qs, q)
 			}
 			if len(qs) < 1024 {
@@ -143,7 +143,7 @@ func allWriteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeQueue <- o
+		writeQueue <- toQueries(o)
 	}
 
 	w.WriteHeader(http.StatusAccepted)
@@ -166,7 +166,7 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeQueue <- m
+	writeQueue <- toQueries(m)
 
 	w.WriteHeader(http.StatusAccepted)
 }
@@ -233,12 +233,13 @@ func uriToUUID(uri string) string {
 
 func toProps(m content) neoism.Props {
 	p := map[string]interface{}{
-		"uuid":      m.UUID,
-		"headline":  m.Title,
-		"title":     m.Title,
-		"prefLabel": m.Title,
-		"body":      m.Body,
-		"byline":    m.Byline,
+		"uuid":          m.UUID,
+		"headline":      m.Title,
+		"title":         m.Title,
+		"prefLabel":     m.Title,
+		"body":          m.Body,
+		"byline":        m.Byline,
+		"publishedDate": m.PublishedDate,
 	}
 
 	return neoism.Props(p)
