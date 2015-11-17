@@ -136,7 +136,6 @@ func allWriteHandler(w http.ResponseWriter, r *http.Request) {
 		var o content
 		err := dec.Decode(&o)
 		if err == io.ErrUnexpectedEOF {
-			println("eof")
 			return
 		}
 		if err != nil {
