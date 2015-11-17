@@ -17,15 +17,15 @@ import (
 
 func main() {
 
-	neoUrl := os.Getenv("NEO_URL")
-	if neoUrl == "" {
+	neoURL := os.Getenv("NEO_URL")
+	if neoURL == "" {
 		log.Println("no $NEO_URL set, defaulting to local")
-		neoUrl = "http://localhost:7474/db/data"
+		neoURL = "http://localhost:7474/db/data"
 	}
-	log.Printf("connecting to %s\n", neoUrl)
+	log.Printf("connecting to %s\n", neoURL)
 
 	var err error
-	db, err = neoism.Connect(neoUrl)
+	db, err = neoism.Connect(neoURL)
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +39,7 @@ func main() {
 	m := mux.NewRouter()
 	http.Handle("/", m)
 
-	m.HandleFunc("/content/{uuid}", idWriteHandler).Methods("PUT")
+	m.HandleFunc("/content/{uuid}", writeHandler).Methods("PUT")
 	m.HandleFunc("/content/", allWriteHandler).Methods("PUT")
 
 	go func() {
@@ -99,7 +99,7 @@ func orgWriteLoop() {
 
 	timer := time.NewTimer(1 * time.Second)
 
-	defer log.Printf("write loop exited")
+	defer log.Println("write loop exited")
 	for {
 		select {
 		case o, ok := <-writeQueue:
@@ -150,7 +150,7 @@ func allWriteHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func idWriteHandler(w http.ResponseWriter, r *http.Request) {
+func writeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 
