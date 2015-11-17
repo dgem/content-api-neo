@@ -200,8 +200,9 @@ func toQueriesArticle(m content) []*neoism.CypherQuery {
 		queries = append(queries, &neoism.CypherQuery{
 			Statement: `
 				MERGE (c:Content {uuid: {cuuid}})
-				MERGE (b:Brand {uuid: {buuid}})
-				MERGE (c)-[r:IS_BRANDED]->(b)
+				MERGE (b:Concept {uuid: {buuid}})
+				MERGE (c)-[r:HAS_BRAND]->(b)
+				SET b :Brand
 			`,
 			Parameters: map[string]interface{}{
 				"cuuid": m.UUID,
@@ -214,8 +215,9 @@ func toQueriesArticle(m content) []*neoism.CypherQuery {
 		queries = append(queries, &neoism.CypherQuery{
 			Statement: `
 				MERGE (c:Content {uuid: {cuuid}})
-				MERGE (b:Image {uuid: {iuuid}})
+				MERGE (b:Content {uuid: {iuuid}})
 				MERGE (c)-[r:HAS_MAINIMAGE]->(i)
+				SET b :Image
 			`,
 			Parameters: map[string]interface{}{
 				"cuuid": m.UUID,
