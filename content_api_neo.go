@@ -74,9 +74,6 @@ func main() {
 
 }
 
-func ensureIndexes(db *neoism.Database) {
-}
-
 var db *neoism.Database
 
 var writeQueue chan []*neoism.CypherQuery
