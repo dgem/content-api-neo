@@ -31,7 +31,12 @@ func main() {
 		panic(err)
 	}
 
-	ensureIndexes(db)
+	neoutil.EnsureIndexes(db, map[string]string{
+		"Content": "uuid",
+		"Article": "uuid",
+		"Image":   "uuid",
+		"Brand":   "uuid",
+	})
 
 	writeQueue = make(chan []*neoism.CypherQuery, 2048)
 
@@ -70,16 +75,6 @@ func main() {
 }
 
 func ensureIndexes(db *neoism.Database) {
-	ensureIndex(db, "Content", "uuid")
-	ensureIndex(db, "Article", "uuid")
-	ensureIndex(db, "Image", "uuid")
-	ensureIndex(db, "Brand", "uuid")
-}
-
-func ensureIndex(db *neoism.Database, label string, prop string) {
-	if err := neoutil.EnsureIndex(db, label, prop); err != nil {
-		panic(err)
-	}
 }
 
 var db *neoism.Database
