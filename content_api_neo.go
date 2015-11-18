@@ -60,8 +60,8 @@ func main() {
 
 	close(bw.WriteQueue)
 	<-bw.Closed
-	println("exiting")
 
+	log.Println("exiting")
 }
 
 var db *neoism.Database
@@ -120,7 +120,18 @@ func toQueries(c content) []*neoism.CypherQuery {
 }
 
 func toQueriesArticle(m content) []*neoism.CypherQuery {
-	props := toProps(m)
+
+	p := map[string]interface{}{
+		"uuid":          m.UUID,
+		"headline":      m.Title,
+		"title":         m.Title,
+		"prefLabel":     m.Title,
+		"body":          m.Body,
+		"byline":        m.Byline,
+		"publishedDate": m.PublishedDate,
+	}
+
+	props := neoism.Props(p)
 
 	var queries []*neoism.CypherQuery
 
@@ -171,18 +182,4 @@ func toQueriesArticle(m content) []*neoism.CypherQuery {
 func uriToUUID(uri string) string {
 	// TODO: make this more robust
 	return strings.Replace(uri, "http://api.ft.com/things/", "", 1)
-}
-
-func toProps(m content) neoism.Props {
-	p := map[string]interface{}{
-		"uuid":          m.UUID,
-		"headline":      m.Title,
-		"title":         m.Title,
-		"prefLabel":     m.Title,
-		"body":          m.Body,
-		"byline":        m.Byline,
-		"publishedDate": m.PublishedDate,
-	}
-
-	return neoism.Props(p)
 }
