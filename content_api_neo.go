@@ -12,8 +12,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
-	"time"
 )
 
 func main() {
@@ -38,8 +36,6 @@ func main() {
 		"Brand":   "uuid",
 	})
 
-	writeQueue = make(chan []*neoism.CypherQuery, 2048)
-
 	port := 8080
 
 	m := mux.NewRouter()
@@ -55,62 +51,22 @@ func main() {
 		}
 	}()
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		orgWriteLoop()
-		wg.Done()
-	}()
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	bw = neoutil.NewBatchWriter(db)
 
 	// wait for ctrl-c
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 	<-c
-	close(writeQueue)
-	wg.Wait()
+
+	close(bw.WriteQueue)
+	<-bw.Closed
 	println("exiting")
 
 }
 
 var db *neoism.Database
 
-var writeQueue chan []*neoism.CypherQuery
-
-func orgWriteLoop() {
-	var qs []*neoism.CypherQuery
-
-	timer := time.NewTimer(1 * time.Second)
-
-	defer log.Println("write loop exited")
-	for {
-		select {
-		case o, ok := <-writeQueue:
-			if !ok {
-				return
-			}
-			for _, q := range o {
-				qs = append(qs, q)
-			}
-			if len(qs) < 1024 {
-				timer.Reset(1 * time.Second)
-				continue
-			}
-		case <-timer.C:
-		}
-		if len(qs) > 0 {
-			fmt.Printf("writing batch of %d\n", len(qs))
-			err := db.CypherBatch(qs)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("wrote batch of %d\n", len(qs))
-			qs = qs[0:0]
-			timer.Stop()
-		}
-	}
-}
+var bw *neoutil.BatchWriter
 
 func allWriteHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -127,7 +83,7 @@ func allWriteHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		writeQueue <- toQueries(o)
+		bw.WriteQueue <- toQueries(o)
 	}
 
 	w.WriteHeader(http.StatusAccepted)
@@ -150,7 +106,7 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeQueue <- toQueries(m)
+	bw.WriteQueue <- toQueries(m)
 
 	w.WriteHeader(http.StatusAccepted)
 }
