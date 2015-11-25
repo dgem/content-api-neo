@@ -108,19 +108,28 @@ func toQueriesArticle(m content) []*neoism.CypherQuery {
 		"publishedDate": m.PublishedDate,
 	}
 
-	props := neoism.Props(p)
-
 	var queries []*neoism.CypherQuery
 
+	stmt := `
+		MERGE (c:Content {uuid: {uuid}})
+		SET c = {props}
+		SET c :Article
+		`
+
+	if m.MainImage != "" {
+		stmt += `
+			MERGE (i:Content {uuid: {iuuid}})
+			MERGE (c)-[r:HAS_MAINIMAGE]->(i)
+			SET i :Image
+			`
+	}
+
 	queries = append(queries, &neoism.CypherQuery{
-		Statement: `
-			MERGE (c:Content {uuid: {uuid}})
-			SET c = {props}
-			SET c :Article
-		`,
+		Statement: stmt,
 		Parameters: map[string]interface{}{
 			"uuid":  m.UUID,
-			"props": props,
+			"props": neoism.Props(p),
+			"iuuid": m.MainImage,
 		},
 	})
 
@@ -139,20 +148,6 @@ func toQueriesArticle(m content) []*neoism.CypherQuery {
 		})
 	}
 
-	if m.MainImage != "" {
-		queries = append(queries, &neoism.CypherQuery{
-			Statement: `
-				MERGE (c:Content {uuid: {cuuid}})
-				MERGE (i:Content {uuid: {iuuid}})
-				MERGE (c)-[r:HAS_MAINIMAGE]->(i)
-				SET i :Image
-			`,
-			Parameters: map[string]interface{}{
-				"cuuid": m.UUID,
-				"iuuid": m.MainImage,
-			},
-		})
-	}
 	return queries
 }
 
