@@ -51,7 +51,7 @@ func main() {
 		}
 	}()
 
-	bw = neoutil.NewBatchWriter(db)
+	bw = neoutil.NewBatchWriter(db, 1024)
 
 	// wait for ctrl-c
 	c := make(chan os.Signal, 1)
