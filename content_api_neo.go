@@ -49,22 +49,21 @@ func main() {
 		}
 	}()
 
-	bw = neoutil.NewBatchWriter(db, 1024)
+	cw = neoutil.NewSafeWriter(db, 1024)
 
 	// wait for ctrl-c
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
 
-	close(bw.WriteQueue)
-	<-bw.Closed
+	cw.Close()
 
 	log.Println("exiting")
 }
 
 var db *neoism.Database
 
-var bw *neoutil.BatchWriter
+var cw neoutil.CypherWriter
 
 func writeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -83,7 +82,7 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bw.WriteQueue <- toQueries(m)
+	cw.WriteCypher(toQueries(m))
 
 	w.WriteHeader(http.StatusAccepted)
 }
