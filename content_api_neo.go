@@ -65,12 +65,12 @@ var db *neoism.Database
 
 var cw neoutil.CypherWriter
 
-func writeHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+func writeHandler(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
 	uuid := vars["uuid"]
 
 	var m content
-	dec := json.NewDecoder(r.Body)
+	dec := json.NewDecoder(req.Body)
 	err := dec.Decode(&m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -82,9 +82,11 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cw.WriteCypher(toQueries(m))
-
-	w.WriteHeader(http.StatusAccepted)
+	err = cw.WriteCypher(toQueries(m))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func toQueries(c content) []*neoism.CypherQuery {
