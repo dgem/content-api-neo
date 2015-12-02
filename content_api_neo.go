@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Financial-Times/up-neoutil-go"
 	"github.com/gorilla/mux"
+	"github.com/jawher/mow.cli"
 	"github.com/jmcvetta/neoism"
 	"log"
 	"net/http"
@@ -14,19 +15,25 @@ import (
 )
 
 func main() {
+	app := cli.App("content-api-neo", "A RESTful API for managing Content in neo4j")
+	neoURL := app.StringOpt("neo-url", "http://localhost:7474/db/data", "neo4j endpoint URL")
+	port := app.IntOpt("port", 8080, "Port to listen on")
 
-	neoURL := os.Getenv("NEO_URL")
-	if neoURL == "" {
-		log.Println("no $NEO_URL set, defaulting to local")
-		neoURL = "http://localhost:7474/db/data"
+	app.Action = func() {
+		runServer(*neoURL, *port)
 	}
-	log.Printf("connecting to %s\n", neoURL)
 
+	app.Run(os.Args)
+}
+
+func runServer(neoURL string, port int) {
 	var err error
 	db, err = neoism.Connect(neoURL)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+
+	log.Printf("connected to %s\n", neoURL)
 
 	neoutil.EnsureIndexes(db, map[string]string{
 		"Content": "uuid",
@@ -35,12 +42,12 @@ func main() {
 		"Brand":   "uuid",
 	})
 
-	port := 8080
-
 	m := mux.NewRouter()
 	http.Handle("/", m)
 
 	m.HandleFunc("/content/{uuid}", writeHandler).Methods("PUT")
+
+	cw = neoutil.NewSafeWriter(db, 1024)
 
 	go func() {
 		log.Printf("listening on %d", port)
@@ -48,8 +55,6 @@ func main() {
 			log.Printf("web stuff failed: %v\n", err)
 		}
 	}()
-
-	cw = neoutil.NewSafeWriter(db, 1024)
 
 	// wait for ctrl-c
 	c := make(chan os.Signal, 1)
