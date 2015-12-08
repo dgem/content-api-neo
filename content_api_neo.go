@@ -105,13 +105,14 @@ func toQueries(c content) []*neoism.CypherQuery {
 func toQueriesArticle(m content) []*neoism.CypherQuery {
 
 	p := map[string]interface{}{
-		"uuid":          m.UUID,
-		"headline":      m.Title,
-		"title":         m.Title,
-		"prefLabel":     m.Title,
-		"body":          m.Body,
-		"byline":        m.Byline,
-		"publishedDate": m.PublishedDate,
+		"uuid":                 m.UUID,
+		"headline":             m.Title,
+		"title":                m.Title,
+		"prefLabel":            m.Title,
+		"body":                 m.Body,
+		"byline":               m.Byline,
+		"publishedDate":        m.PublishedDate,
+		"publishedDateEpochMs": m.PublishedDate.Unix(),
 	}
 
 	var queries []*neoism.CypherQuery
