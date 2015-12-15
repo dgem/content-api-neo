@@ -1,11 +1,11 @@
-package main
+package content
 
 import (
 	"time"
 )
 
 // TODO: this is really just article right now.
-type content struct {
+type Content struct {
 	Body   string `json:"body"`
 	Brands []struct {
 		ID string `json:"id"`
