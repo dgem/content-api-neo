@@ -92,7 +92,7 @@ func (bnc ContentNeoEngine) createOrUpdateArticle(cr neoutil.CypherRunner, c Con
 		})
 	}
 
-	return cr.WriteCypher(queries)
+	return cr.CypherBatch(queries)
 }
 
 func (bnc ContentNeoEngine) Delete(cr neoutil.CypherRunner, identity string) (bool, error) {
