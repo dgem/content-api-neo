@@ -18,10 +18,10 @@ func (bnc ContentNeoEngine) DecodeJSON(dec *json.Decoder) (interface{}, string, 
 
 func (bnc ContentNeoEngine) SuggestedIndexes() map[string]string {
 	return map[string]string{
-		"Content": "uuid",
 		"Article": "uuid",
-		"Image":   "uuid",
-		"Brand":   "uuid",
+		"Content": "uuid",
+		//"Concept": "uuid",  really?
+		"Thing": "uuid",
 	}
 }
 
@@ -55,16 +55,16 @@ func (bnc ContentNeoEngine) createOrUpdateArticle(cr neoutil.CypherRunner, c Con
 	var queries []*neoism.CypherQuery
 
 	stmt := `
-		MERGE (c:Content {uuid: {uuid}})
+		MERGE (c:Thing {uuid: {uuid}})
 		SET c = {props}
+		SET c :Content
 		SET c :Article
 		`
 
 	if c.MainImage != "" {
 		stmt += `
-			MERGE (i:Content {uuid: {iuuid}})
+			MERGE (i:Thing {uuid: {iuuid}})
 			MERGE (c)-[r:HAS_MAINIMAGE]->(i)
-			SET i :Image
 			`
 	}
 
@@ -81,9 +81,8 @@ func (bnc ContentNeoEngine) createOrUpdateArticle(cr neoutil.CypherRunner, c Con
 		queries = append(queries, &neoism.CypherQuery{
 			Statement: `
 				MERGE (c:Content {uuid: {cuuid}})
-				MERGE (b:Concept {uuid: {buuid}})
+				MERGE (b:Thing {uuid: {buuid}})
 				MERGE (c)-[r:HAS_BRAND]->(b)
-				SET b :Brand
 			`,
 			Parameters: map[string]interface{}{
 				"cuuid": c.UUID,
