@@ -3,7 +3,7 @@ package content
 import (
 	"encoding/json"
 	"github.com/Financial-Times/up-neoutil-go"
-	"github.com/Financial-Times/neoism"
+	"github.com/jmcvetta/neoism"
 	"log"
 	"strings"
 )
