@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-type ContentNeoEngine struct{}
+type ContentNeoEngine struct {
+	Cr neoutil.CypherRunner
+}
 
 func (bnc ContentNeoEngine) DecodeJSON(dec *json.Decoder) (interface{}, string, error) {
 	b := Content{}
@@ -25,21 +27,21 @@ func (bnc ContentNeoEngine) SuggestedIndexes() map[string]string {
 	}
 }
 
-func (bnc ContentNeoEngine) Read(cr neoutil.CypherRunner, identity string) (interface{}, bool, error) {
+func (bnc ContentNeoEngine) Read(identity string) (interface{}, bool, error) {
 	panic("not implemented")
 }
 
-func (bnc ContentNeoEngine) CreateOrUpdate(cr neoutil.CypherRunner, obj interface{}) error {
+func (bnc ContentNeoEngine) CreateOrUpdate(obj interface{}) error {
 	c := obj.(Content)
 
 	if c.Body != "" {
-		return bnc.createOrUpdateArticle(cr, c)
+		return bnc.createOrUpdateArticle(c)
 	}
 	log.Printf("skipping non-article content %v\n", c.UUID)
 	return nil
 }
 
-func (bnc ContentNeoEngine) createOrUpdateArticle(cr neoutil.CypherRunner, c Content) error {
+func (eng ContentNeoEngine) createOrUpdateArticle(c Content) error {
 
 	p := map[string]interface{}{
 		"uuid":                 c.UUID,
@@ -91,10 +93,10 @@ func (bnc ContentNeoEngine) createOrUpdateArticle(cr neoutil.CypherRunner, c Con
 		})
 	}
 
-	return cr.CypherBatch(queries)
+	return eng.Cr.CypherBatch(queries)
 }
 
-func (bnc ContentNeoEngine) Delete(cr neoutil.CypherRunner, identity string) (bool, error) {
+func (bnc ContentNeoEngine) Delete(identity string) (bool, error) {
 	panic("not implemented")
 }
 
