@@ -2,14 +2,14 @@ package content
 
 import (
 	"encoding/json"
-	"github.com/Financial-Times/up-neoutil-go"
+	"github.com/Financial-Times/neo-cypher-runner-go"
 	"github.com/jmcvetta/neoism"
 	"log"
 	"strings"
 )
 
 type ContentNeoEngine struct {
-	Cr neoutil.CypherRunner
+	Cr neocypherrunner.CypherRunner
 }
 
 func (bnc ContentNeoEngine) DecodeJSON(dec *json.Decoder) (interface{}, string, error) {

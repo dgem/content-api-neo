@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/Financial-Times/content-api-neo/content"
+	"github.com/Financial-Times/neo-cypher-runner-go"
+	"github.com/Financial-Times/neo-utils-go"
 	"github.com/Financial-Times/up-neoutil-go"
 	"github.com/jawher/mow.cli"
 	"github.com/jmcvetta/neoism"
@@ -21,7 +23,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		cr := neoutil.NewBatchWriter(db, 1024)
+		cr := neocypherrunner.NewBatchCypherRunner(neoutils.StringerDb{db}, 1024)
 
 		engs := map[string]neoutil.NeoEngine{
 			"content": content.ContentNeoEngine{cr},
