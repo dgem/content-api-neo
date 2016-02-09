@@ -31,7 +31,7 @@ func (bnc ContentNeoEngine) Read(identity string) (interface{}, bool, error) {
 	panic("not implemented")
 }
 
-func (bnc ContentNeoEngine) CreateOrUpdate(obj interface{}) error {
+func (bnc ContentNeoEngine) Write(obj interface{}) error {
 	c := obj.(Content)
 
 	if c.Body != "" {
